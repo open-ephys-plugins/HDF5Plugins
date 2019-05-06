@@ -61,7 +61,7 @@ elseif(LINUX)
 	target_compile_options(${PLUGIN_NAME} PRIVATE -fPIC -rdynamic)
 	target_compile_options(${PLUGIN_NAME} PRIVATE -O3) #enable optimization for linux debug
 	
-	install(TARGETS ${PLUGIN_NAME} RUNTIME DESTINATION ${GUI_BIN_DIR}/plugins)
+	install(TARGETS ${PLUGIN_NAME} LIBRARY DESTINATION ${GUI_BIN_DIR}/plugins)
 elseif(APPLE)
 	set(GUI_BIN_DIR ${GUI_BASE_DIR}/Builds/MacOSX/build/)
 	set_target_properties(${PLUGIN_NAME} PROPERTIES BUNDLE TRUE)
@@ -81,12 +81,15 @@ foreach( src_file IN ITEMS ${SRC_FILES})
 endforeach()
 
 #additional libraries needed
-find_library(HDF5_LIB NAMES hdf5)
-find_library(HDF5CPP_LIB NAMES hdf5_cpp)
-target_link_libraries(${PLUGIN_NAME} ${HDF5_LIB} ${HDF5CPP_LIB})
+find_package(HDF5 COMPONENTS CXX)
+if(NOT HDF5_FOUND) #if package finding fails, try manually
+find_library(HDF5_LIBRARIES NAMES hdf5)
+find_library(HDF5_CXX_LIBRARIES NAMES hdf5_cpp)
+find_path(HDF5_INCLUDE_DIRS H5Cpp.h)
+endif()
 
-find_path(HDF5_INCLUDE H5Cpp.h)
-target_include_directories(${PLUGIN_NAME} PRIVATE ${HDF5_INCLUDE})
+target_link_libraries(${PLUGIN_NAME} ${HDF5_LIBRARIES} ${HDF5_CXX_LIBRARIES})
+target_include_directories(${PLUGIN_NAME} PRIVATE ${HDF5_INCLUDE_DIRS})
 
 target_include_directories(${PLUGIN_NAME} PUBLIC ../../OpenEphysHDF5Lib/Source)
 
