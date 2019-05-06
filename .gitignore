@@ -5,7 +5,7 @@
 *.d
 
 
-# 2. Windows related
+# 2. Build files related
 
 **/Builds/*
 Build/*
@@ -13,3 +13,5 @@ Build/*
 !**/CMAKE_README.txt
 
 
+# 3. other
+**/.DS_Store

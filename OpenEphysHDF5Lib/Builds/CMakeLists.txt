@@ -19,7 +19,7 @@ set_property(DIRECTORY APPEND PROPERTY COMPILE_DEFINITIONS
 	$<$<CONFIG:Debug>:_DEBUG=1>
 	$<$<CONFIG:Release>:NDEBUG=1>
 	)
-	
+
 set(SOURCE_PATH ${CMAKE_CURRENT_SOURCE_DIR}/../Source)
 file(GLOB_RECURSE SRC_FILES LIST_DIRECTORIES false "${SOURCE_PATH}/*.cpp" "${SOURCE_PATH}/*.h")
 
@@ -42,7 +42,7 @@ if(MSVC)
 	target_link_directories(${COMMONLIB_NAME} PUBLIC $<$<CONFIG:Release>:${GUI_BIN_DIR}/Release/bin>)
 	target_link_libraries(${COMMONLIB_NAME} open-ephys.lib)
 	target_compile_options(${COMMONLIB_NAME} PRIVATE /sdl-)
-	
+
 	install(TARGETS ${COMMONLIB_NAME} RUNTIME DESTINATION ${GUI_BIN_DIR}/Debug/bin/shared CONFIGURATIONS Debug)
 	install(TARGETS ${COMMONLIB_NAME} RUNTIME DESTINATION ${GUI_BIN_DIR}/Release/bin/shared CONFIGURATIONS Release)
 	set(CMAKE_PREFIX_PATH ${CMAKE_CURRENT_SOURCE_DIR}/../../libs)
@@ -54,15 +54,16 @@ elseif(LINUX)
 		"-fvisibility=hidden -fPIC -rdynamic -Wl,-rpath,'$$ORIGIN'")
 	target_compile_options(${COMMONLIB_NAME} PRIVATE -fPIC -rdynamic)
 	target_compile_options(${COMMONLIB_NAME} PRIVATE -O3) #enable optimization for linux debug
-	
+
 	install(TARGETS ${COMMONLIB_NAME} LIBRARY DESTINATION ${GUI_BIN_DIR}/shared)
 elseif(APPLE)
 	set(GUI_BIN_DIR ${GUI_BASE_DIR}/Builds/MacOSX/build/)
 	set_target_properties(${COMMONLIB_NAME} PROPERTIES BUNDLE FALSE)
 	set_property(TARGET ${COMMONLIB_NAME} APPEND_STRING PROPERTY LINK_FLAGS
 	"-undefined dynamic_lookup")
-	
-	install(TARGETS ${COMMONLIB_NAME} RUNTIME DESTINATION ~/Library/Application\ Support/open-ephys/shared)
+
+	install(TARGETS ${COMMONLIB_NAME} DESTINATION $ENV{HOME}/Library/Application\ Support/open-ephys/shared)
+	set(CMAKE_PREFIX_PATH /opt/local)
 endif()
 
 #create filters for vs and xcode
@@ -74,10 +75,16 @@ foreach( src_file IN ITEMS ${SRC_FILES})
 	source_group("${group_name}" FILES "${src_file}")
 endforeach()
 
-
+if (APPLE) #this is needed by the unorthodox way hdf5 version 18 is installed
+	set(CMAKE_PREFIX_PATH ${CMAKE_PREFIX_PATH};/opt/local/lib/hdf5-18)
+endif()
 #additional libraries needed
-find_package(HDF5 COMPONENTS CXX)
+find_package(HDF5 1.8 EXACT COMPONENTS CXX)
 if(NOT HDF5_FOUND) #if package finding fails, try manually
+#unset variables in case a wrong version has been found
+unset(HDF5_LIBRARIES)
+unset(HDF5_CXX_LIBRARIES)
+unset(HDF5_INCLUDE_DIRS)
 find_library(HDF5_LIBRARIES NAMES hdf5)
 find_library(HDF5_CXX_LIBRARIES NAMES hdf5_cpp)
 find_path(HDF5_INCLUDE_DIRS H5Cpp.h)
