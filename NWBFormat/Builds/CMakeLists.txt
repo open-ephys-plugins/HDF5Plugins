@@ -69,6 +69,7 @@ elseif(APPLE)
 	"-undefined dynamic_lookup -rpath @loader_path/../../../../shared")
 
 	install(TARGETS ${PLUGIN_NAME} DESTINATION $ENV{HOME}/Library/Application\ Support/open-ephys/PlugIns)
+	set(CMAKE_PREFIX_PATH /opt/local)
 endif()
 
 #create filters for vs and xcode
