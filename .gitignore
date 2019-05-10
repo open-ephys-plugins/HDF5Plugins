@@ -7,7 +7,7 @@
 
 # 2. Build files related
 
-**/Builds/*
+**/Build/*
 Build/*
 !**/CMakeLists.txt
 !**/CMAKE_README.txt
