@@ -54,7 +54,7 @@ if(MSVC)
 	target_link_libraries(${PLUGIN_NAME} open-ephys.lib)
 	target_compile_options(${PLUGIN_NAME} PRIVATE /sdl-)
 
-	install(TARGETS ${PLUGIN_NAME} RUNTIME DESTINATION ${GUI_BIN_DIR}/Debug/bin/1.8 EXACT plugins CONFIGURATIONS Debug)
+	install(TARGETS ${PLUGIN_NAME} RUNTIME DESTINATION ${GUI_BIN_DIR}/Debug/bin/plugins CONFIGURATIONS Debug)
 	install(TARGETS ${PLUGIN_NAME} RUNTIME DESTINATION ${GUI_BIN_DIR}/Release/bin/plugins CONFIGURATIONS Release)
 	set(CMAKE_PREFIX_PATH ${CMAKE_CURRENT_SOURCE_DIR}/../../libs)
 elseif(LINUX)
