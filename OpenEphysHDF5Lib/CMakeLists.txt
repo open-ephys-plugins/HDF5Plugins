@@ -63,8 +63,6 @@ if(MSVC)
 	install(TARGETS ${COMMONLIB_NAME} RUNTIME DESTINATION ${GUI_BIN_DIR}/shared CONFIGURATIONS ${CMAKE_CONFIGURATION_TYPES})
 	list(APPEND CMAKE_PREFIX_PATH ${CMAKE_CURRENT_SOURCE_DIR}/../libs)
 elseif(LINUX)
-	set(GUI_BIN_DIR ${GUI_BASE_DIR}/Builds/Linux/build)
-
 	target_link_libraries(${COMMONLIB_NAME} GL X11 Xext Xinerama asound dl freetype pthread rt)
 	set_property(TARGET ${COMMONLIB_NAME} APPEND_STRING PROPERTY LINK_FLAGS
 		"-fvisibility=hidden -fPIC -rdynamic -Wl,-rpath,'$$ORIGIN'")
@@ -73,7 +71,6 @@ elseif(LINUX)
 	
 	install(TARGETS ${COMMONLIB_NAME} LIBRARY DESTINATION ${GUI_BIN_DIR}/shared)
 elseif(APPLE)
-	set(GUI_BIN_DIR ${GUI_BASE_DIR}/Builds/MacOSX/build/)
 	set_target_properties(${COMMONLIB_NAME} PROPERTIES BUNDLE FALSE)
 	set_property(TARGET ${COMMONLIB_NAME} APPEND_STRING PROPERTY LINK_FLAGS
 	"-undefined dynamic_lookup")
