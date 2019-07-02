@@ -3,11 +3,11 @@ if (NOT DEFINED GUI_BASE_DIR)
 	if (DEFINED ENV{GUI_BASE_DIR})
 		set(GUI_BASE_DIR $ENV{GUI_BASE_DIR})
 	else()
-		set(GUI_BASE_DIR ${CMAKE_CURRENT_SOURCE_DIR}/../../../plugin-GUI)
+		set(GUI_BASE_DIR ${CMAKE_CURRENT_SOURCE_DIR}/../../plugin-GUI)
 	endif()
 endif()
 
-get_filename_component(PROJECT_FOLDER ${CMAKE_CURRENT_SOURCE_DIR}/.. ABSOLUTE)
+get_filename_component(PROJECT_FOLDER ${CMAKE_CURRENT_SOURCE_DIR} ABSOLUTE)
 get_filename_component(PLUGIN_NAME ${PROJECT_FOLDER} NAME)
 
 project(OE_PLUGIN_${PLUGIN_NAME})
@@ -27,8 +27,10 @@ set_property(DIRECTORY APPEND PROPERTY COMPILE_DEFINITIONS
 	)
 
 
-set(SOURCE_PATH ${CMAKE_CURRENT_SOURCE_DIR}/../Source)
+set(SOURCE_PATH ${CMAKE_CURRENT_SOURCE_DIR}/Source)
 file(GLOB_RECURSE SRC_FILES LIST_DIRECTORIES false "${SOURCE_PATH}/*.cpp" "${SOURCE_PATH}/*.h")
+set(GUI_COMMONLIB_DIR ${GUI_BASE_DIR}/installed_libs)
+list(APPEND CMAKE_PREFIX_PATH ${GUI_COMMONLIB_DIR})
 
 if (APPLE)
 	add_library(${PLUGIN_NAME} MODULE ${SRC_FILES})
@@ -37,26 +39,26 @@ else()
 endif()
 
 target_compile_features(${PLUGIN_NAME} PUBLIC cxx_auto_type cxx_generalized_initializers)
-target_include_directories(${PLUGIN_NAME} PUBLIC ${GUI_BASE_DIR}/JuceLibraryCode ${GUI_BASE_DIR}/JuceLibraryCode/modules ${GUI_BASE_DIR}/Source/Plugins/Headers)
+target_include_directories(${PLUGIN_NAME} PUBLIC ${GUI_BASE_DIR}/JuceLibraryCode ${GUI_BASE_DIR}/JuceLibraryCode/modules ${GUI_BASE_DIR}/Plugins/Headers ${GUI_COMMONLIB_DIR}/include)
 
-#Libraries and compiler options
-if(MSVC)
-	set(GUI_BIN_DIR ${GUI_BASE_DIR}/Builds/VisualStudio2013)
+set(GUI_BIN_DIR ${GUI_BASE_DIR}/Build/$<IF:$<CONFIG:Debug>,Debug,Release>)
+
+if (NOT CMAKE_LIBRARY_ARCHITECTURE)
 	if (CMAKE_SIZEOF_VOID_P EQUAL 8)
-		set(GUI_BIN_DIR ${GUI_BIN_DIR}/x64)
 		set(CMAKE_LIBRARY_ARCHITECTURE "x64")
 	else()
 		set(CMAKE_LIBRARY_ARCHITECTURE "x86")
 	endif()
+endif()
 
-	target_link_directories(${PLUGIN_NAME} PUBLIC $<$<CONFIG:Debug>:${GUI_BIN_DIR}/Debug/bin>)
-	target_link_directories(${PLUGIN_NAME} PUBLIC $<$<CONFIG:Release>:${GUI_BIN_DIR}/Release/bin>)
-	target_link_libraries(${PLUGIN_NAME} open-ephys.lib)
+#Libraries and compiler options
+if(MSVC)
+	target_link_libraries(${PLUGIN_NAME} ${GUI_BIN_DIR}/open-ephys.lib)
 	target_compile_options(${PLUGIN_NAME} PRIVATE /sdl-)
+	
+	install(TARGETS ${PLUGIN_NAME} RUNTIME DESTINATION ${GUI_BIN_DIR}/plugins  CONFIGURATIONS ${CMAKE_CONFIGURATION_TYPES})
 
-	install(TARGETS ${PLUGIN_NAME} RUNTIME DESTINATION ${GUI_BIN_DIR}/Debug/bin/plugins CONFIGURATIONS Debug)
-	install(TARGETS ${PLUGIN_NAME} RUNTIME DESTINATION ${GUI_BIN_DIR}/Release/bin/plugins CONFIGURATIONS Release)
-	set(CMAKE_PREFIX_PATH ${CMAKE_CURRENT_SOURCE_DIR}/../../libs)
+	set(CMAKE_PREFIX_PATH ${CMAKE_CURRENT_SOURCE_DIR}/../libs)
 elseif(LINUX)
 	set(GUI_BIN_DIR ${GUI_BASE_DIR}/Builds/Linux/build)
 
@@ -65,7 +67,7 @@ elseif(LINUX)
 		"-fvisibility=hidden -fPIC -rdynamic -Wl,-rpath,'$$ORIGIN/../shared'")
 	target_compile_options(${PLUGIN_NAME} PRIVATE -fPIC -rdynamic)
 	target_compile_options(${PLUGIN_NAME} PRIVATE -O3) #enable optimization for linux debug
-
+	
 	install(TARGETS ${PLUGIN_NAME} LIBRARY DESTINATION ${GUI_BIN_DIR}/plugins)
 elseif(APPLE)
 	set(GUI_BIN_DIR ${GUI_BASE_DIR}/Builds/MacOSX/build/)
@@ -89,7 +91,7 @@ endforeach()
 #additional libraries needed
 
 
-target_include_directories(${PLUGIN_NAME} PUBLIC ../../OpenEphysHDF5Lib/Source)
+target_include_directories(${PLUGIN_NAME} PUBLIC ../OpenEphysHDF5Lib/Source)
 
 #if not building from the general project, this needs to point to the actual lib file
 target_link_libraries(${PLUGIN_NAME} OpenEphysHDF5Lib)

@@ -5,13 +5,5 @@
 *.d
 
 
-# 2. Build files related
-
-**/Build/*
-Build/*
-!**/CMakeLists.txt
-!**/CMAKE_README.txt
-
-
 # 3. other
 **/.DS_Store
